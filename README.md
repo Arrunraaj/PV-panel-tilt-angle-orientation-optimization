@@ -48,4 +48,14 @@ At these latitudes the latitude-tilt, due-south rule lands within roughly 1% of 
 - Irradiance is not converted to electrical yield (no module efficiency,shading or inverter losses)
 - Fixed ground albedo and a constant bifacial view factor, so row spacing and mounting height are not represented
 
+## Project Files
+
+* [PV panel code file.ipynb](https://github.com/Arrunraaj/PV-panel-tilt-angle-orientation-optimization/blob/main/PV%20panel%20Orientation%20and%20angle%20optimization.ipynb) – Python modelling and calculations
+
+
+**Department:** Energy Science and Engineerin, IIT Bombay
+**Year:** 2025
+
+**Author:** Arrunraaj K
+
 

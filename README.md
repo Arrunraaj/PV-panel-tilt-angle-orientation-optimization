@@ -17,15 +17,7 @@ Rather than assuming the usual rule of thumb — tilt equal to latitude, facing 
 - Bifacial model with rear-side gain (bifaciality 0.95, view factor 0.5 on GHI)
 - Azimuth sweep in 45° steps with an annual-irradiance-vs-orientation plot
 
-## Repository structure
 
-```
-.
-├── PV_panel_Orientation_and_angle_optimization.ipynb
-├── data/                  # hourly weather files, one .xlsx per site
-├── Images/                # generated plots
-└── README.md
-```
 
 ## Sites
 
@@ -37,21 +29,7 @@ Rather than assuming the usual rule of thumb — tilt equal to latitude, facing 
 | IIT Bombay, Mumbai | 19.13° N | 72.90° E |
 | Muzaffarpur, Bihar | 26.12° N | 85.39° E |
 
-## Input data
 
-One `.xlsx` file per site, 8,760 hourly rows with columns `Hour`, `DNI`, `DHI`, `GHI` (W/m²), taken as averages centred at the half-hour.
-
-## Installation
-
-```bash
-git clone https://github.com/<user>/<repo>.git
-cd <repo>
-pip install pandas numpy scipy matplotlib openpyxl jupyter
-```
-
-## Usage
-
-Point `folder_path` at the weather files, add any new site's coordinates to `location()`, and run all cells. Each site prints the baseline POA total, the optimal β and γ, and the bifacial total.
 
 ## Results
 
@@ -65,11 +43,9 @@ At these latitudes the latitude-tilt, due-south rule lands within roughly 1% of 
 
 ## Limitations
 
-- Isotropic sky only; Perez or Hay–Davies would model diffuse irradiance more accurately
+- Isotropic sky only
 - Fixed-tilt systems only, no single- or dual-axis tracking
-- Irradiance is not converted to electrical yield (no module efficiency, temperature derating, soiling, shading or inverter losses)
+- Irradiance is not converted to electrical yield (no module efficiency,shading or inverter losses)
 - Fixed ground albedo and a constant bifacial view factor, so row spacing and mounting height are not represented
 
-## License
 
-MIT

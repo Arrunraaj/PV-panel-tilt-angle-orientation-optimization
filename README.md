@@ -1,61 +1,72 @@
-# PV Panel Orientation and Tilt Angle Optimization
+# PV Panel Tilt and Orientation Optimization
 
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
-![Jupyter](https://img.shields.io/badge/jupyter-notebook-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+A Python model that calculates the optimal tilt (β) and azimuth (γ) angles for fixed photovoltaic panels to maximize annual solar energy yield, using real hourly weather data across multiple locations in India.
 
-Finds the fixed tilt (β) and azimuth (γ) that maximise annual plane-of-array (POA) irradiance for a solar PV installation, using 8,760-hour weather data for five sites in India.
+## Overview
 
-Rather than assuming the usual rule of thumb — tilt equal to latitude, facing due south — this notebook computes the full annual irradiance sum for any orientation, searches numerically for the optimum, and quantifies how much is actually gained. A bifacial-module case estimates the additional rear-side yield.
+Fixed-mount PV panels are typically installed at a tilt equal to the site's latitude, facing due south (in the northern hemisphere). This project tests whether that "standard" configuration is actually optimal, or whether a numerically optimized tilt and azimuth can capture more solar energy over a full year.
 
-## Features
+The model:
+1. Computes solar geometry (declination angle, hour angle) for every hour of the year at a given site
+2. Estimates plane-of-array (POA) irradiance using the **Liu-Jordan isotropic sky diffuse model**, combining direct normal irradiance (DNI) and diffuse horizontal irradiance (DHI)
+3. Uses **SciPy's L-BFGS-B optimizer** to solve for the tilt and azimuth angles that maximize total annual POA irradiance
+4. Compares the optimized configuration against the standard configuration (tilt = latitude, azimuth = 0°)
+5. Extends the analysis to **bifacial panels**, which also capture reflected irradiance on their rear side
 
-- Hourly solar geometry: declination, equation of time, local apparent time and hour angle (IST reference, 82.5°E)
-- Angle of incidence and zenith angle from latitude, declination and hour angle
-- Liu–Jordan isotropic sky model: beam, isotropic diffuse and ground-reflected components (albedo 0.2)
-- Bounded optimisation of β ∈ [0°, 90°] and γ ∈ [−180°, 180°] via `scipy.optimize.minimize` (L-BFGS-B)
-- Bifacial model with rear-side gain (bifaciality 0.95, view factor 0.5 on GHI)
-- Azimuth sweep in 45° steps with an annual-irradiance-vs-orientation plot
-
-
-
-## Sites
+## Locations Analyzed
 
 | Site | Latitude | Longitude |
 |---|---|---|
-| Erode, Tamil Nadu | 11.56° N | 77.57° E |
-| Miryalaguda, Telangana | 16.88° N | 79.57° E |
-| Srikakulam, Andhra Pradesh | 18.28° N | 83.91° E |
-| IIT Bombay, Mumbai | 19.13° N | 72.90° E |
-| Muzaffarpur, Bihar | 26.12° N | 85.39° E |
+| Anthiyur, Tamil Nadu | 11.56° | 77.57° |
+| Miryalaguda, Telangana | 16.88° | 79.57° |
+| Srikakulam, Andhra Pradesh | 18.28° | 83.91° |
+| IIT Bombay, Maharashtra | 19.13° | 72.9° |
+| Muzaffarpur, Bihar | 26.12° | 85.39° |
 
+Each site uses a full year of hourly TMY (Typical Meteorological Year) weather data, including DNI and DHI values.
 
+## Methodology
 
-## Results
+**Solar geometry**
+- Declination angle (δ) is calculated per day using the standard Cooper's equation.
+- The hour angle (ω) is derived from local apparent time, corrected for the equation of time and longitude offset from the site's standard meridian.
 
-| Site | Standard β / γ | Optimal β / γ | Baseline POA (kWh/m²·yr) | Optimised POA | Bifacial POA |
-|---|---|---|---|---|---|
-| Erode | 11.56° / 0° | 13.57° / −1.45° | 2,089 | 2,089 | 2,284 |
-| IIT Bombay | 19.13° / 0° | 24.85° / −21.66° | 1,866 | 1,882 | 2,037 |
-| Muzaffarpur | 26.12° / 0° | 26.50° / 1.54° | 1,889 | 1,889 | 2,058 |
+**Irradiance model (Liu-Jordan isotropic model)**
+- Beam irradiance on the tilted surface is scaled by the cosine of the angle of incidence (cos θ).
+- Diffuse irradiance is scaled by a sky-view factor, (1 + cos β) / 2.
+- Ground-reflected irradiance is added using a fixed ground reflectivity (albedo) of 0.2.
 
-At these latitudes the latitude-tilt, due-south rule lands within roughly 1% of optimal, while bifacial modules add close to 10% on the same structure.
+**Optimization**
+- Objective function: total annual POA irradiance (summed hourly `EPOA` values), negated for minimization.
+- Variables: tilt (β, bounded 0°–90°) and azimuth (γ, bounded -180° to 180°).
+- Solver: `scipy.optimize.minimize` with the `L-BFGS-B` method.
 
-## Limitations
+**Bifacial extension**
+- Adds a rear-side irradiance contribution based on ground-reflected and diffuse components, to compare monofacial vs. bifacial annual yield at the standard configuration.
 
-- Isotropic sky only
-- Fixed-tilt systems only, no single- or dual-axis tracking
-- Irradiance is not converted to electrical yield (no module efficiency,shading or inverter losses)
-- Fixed ground albedo and a constant bifacial view factor, so row spacing and mounting height are not represented
+## Sample Results
 
-## Project Files
+| Site | Standard (β = lat, γ = 0°) | Optimized β, γ | Improvement |
+|---|---|---|---|
+| Anthiyur | 11.56°, 0° | 13.57°, -1.45° | ~0.04% |
+| Miryalaguda | 16.88°, 0° | 19.09°, -2.33° | ~0.05% |
+| Srikakulam | 18.28°, 0° | 20.11°, 1.14° | ~0.03% |
+| IIT Bombay | 19.13°, 0° | 24.85°, -21.66° | ~0.87% |
+| Muzaffarpur | 26.12°, 0° | 26.50°, 1.54° | ~0.005% |
 
-* [PV panel code file.ipynb](https://github.com/Arrunraaj/PV-panel-tilt-angle-orientation-optimization/blob/main/PV%20panel%20Orientation%20and%20angle%20optimization.ipynb) – Python modelling and calculations
+Gains from re-optimizing tilt and azimuth are generally small at sites close to their latitude-optimal baseline, but more meaningful at sites with atypical local weather/cloud patterns (e.g., IIT Bombay), where the optimizer shifts the azimuth substantially away from due south.
 
+## Tech Stack
 
-**Department:** Energy Science and Engineerin, IIT Bombay
-**Year:** 2025
+- Python (pandas, NumPy, SciPy, math)
+- Weather data source: TMY hourly `.xlsx` files (DNI, DHI, GHI)
 
-**Author:** Arrunraaj K
+## Repository Structure
 
+- * [PV panel tilt and orientation optimization.ipynb](https://github.com/Arrunraaj/PV-panel-tilt-angle-orientation-optimization/blob/main/PV%20Panel%20tilt%20and%20Orientation%20optimization.ipynb) — main analysis notebook: data loading, solar geometry, irradiance modeling, optimization, and results for all five sites (monofacial and bifacial)
 
+## Possible Extensions
+
+- Replace the isotropic sky model with an anisotropic model (e.g., Perez or Hay-Davies) for more accurate diffuse irradiance estimates
+- Add seasonal or monthly tilt adjustment instead of a single fixed annual optimum
+- Validate modeled irradiance against measured on-site generation data
